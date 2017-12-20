@@ -39,7 +39,7 @@ public class ArkanoidNetBeans extends JFrame {
         startButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                startButton.setText("Pause");
+               
                 startGame();
 
             }
@@ -56,6 +56,7 @@ public class ArkanoidNetBeans extends JFrame {
     }
 
     public void startGame() {
+       
         panelGame.startBall();
     }
 
@@ -74,31 +75,17 @@ public class ArkanoidNetBeans extends JFrame {
 
     class GamePanel extends JPanel {
 
+        Thread thread;
         Ball newBall = new Ball();
-        Thread threadBall;
         JPanel thisPanel = this;
 
         public void startBall() {
-
-            threadBall = new Thread(new BallRunnable(newBall));
-            threadBall.start();
-//            Ball firstBall = 
-//            Ball newBall = new Ball();
-//            for (int i = 0; i < 2000; i++) {
-//                newBall.traficBall(this);
-//                this.paint(this.getGraphics());
-//                System.out.println("piłka nr:" + i);
-//
-//                try {
-//                    Thread.sleep(1);
-//                } catch (InterruptedException ex) {
-//                    Logger.getLogger(ArkanoidNetBeans.class.getName()).log(Level.SEVERE, null, ex);
-//                }
-//            }
+//             Ball newBall = new Ball();
+            thread = new Thread(new BallRunnable(newBall));
+            thread.start();
         }
-
         public void stopBall() {
-
+            thread.interrupt();
         }
 
         @Override
@@ -107,29 +94,28 @@ public class ArkanoidNetBeans extends JFrame {
 
             g.drawImage(Ball.getImg(), (newBall.getX()), newBall.getY(), null);
         }
-    }
 
-    public class BallRunnable implements Runnable {
+        public class BallRunnable implements Runnable {
 
-        Ball ball;
+            Ball ball;
 
-        public BallRunnable(Ball ball) {
-            this.ball = ball;
-        }
-
-        @Override
-        public void run() {
-            try {
-                while (!Thread.currentThread().isInterrupted()) {
-
-                    this.ball.traficBall(thisPanel);
-                    repaint();
-                    Thread.sleep(1);
-                }
-            } catch (InterruptedException ex) {
-                Logger.getLogger(ArkanoidNetBeans.class.getName()).log(Level.SEVERE, null, ex);
-                repaint();
+            public BallRunnable(Ball ball) {
+                this.ball = ball;
             }
+
+            @Override
+            public void run() {
+                try {
+                    while (!Thread.currentThread().isInterrupted()) {
+                        this.ball.traficBall(thisPanel);
+                        repaint();
+                        Thread.sleep(1);
+                    }
+                } catch (InterruptedException ex) {
+                    System.out.println(ex.getMessage());
+                }
+            }
+
         }
     }
 
