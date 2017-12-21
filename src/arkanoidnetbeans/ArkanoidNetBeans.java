@@ -39,7 +39,7 @@ public class ArkanoidNetBeans extends JFrame {
         startButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-               
+
                 startGame();
 
             }
@@ -56,7 +56,7 @@ public class ArkanoidNetBeans extends JFrame {
     }
 
     public void startGame() {
-       
+
         panelGame.startBall();
     }
 
@@ -75,15 +75,18 @@ public class ArkanoidNetBeans extends JFrame {
 
     class GamePanel extends JPanel {
 
+        Ball[] tabBall = new Ball[1];
         Thread thread;
-        Ball newBall = new Ball();
+//        Ball newBall = new Ball();
         JPanel thisPanel = this;
 
         public void startBall() {
 //             Ball newBall = new Ball();
-            thread = new Thread(new BallRunnable(newBall));
+            tabBall[0] = new Ball();
+            thread = new Thread(new BallRunnable(tabBall[0]));
             thread.start();
         }
+
         public void stopBall() {
             thread.interrupt();
         }
@@ -92,7 +95,7 @@ public class ArkanoidNetBeans extends JFrame {
         public void paintComponent(Graphics g) {
             super.paintComponent(g);
 
-            g.drawImage(Ball.getImg(), (newBall.getX()), newBall.getY(), null);
+            g.drawImage(Ball.getImg(), tabBall[0].x, tabBall[0].y, null);
         }
 
         public class BallRunnable implements Runnable {
