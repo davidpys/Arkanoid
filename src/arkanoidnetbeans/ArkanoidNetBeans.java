@@ -27,7 +27,7 @@ public class ArkanoidNetBeans extends JFrame {
 
     public ArkanoidNetBeans() {
         this.setTitle("Arkanoid z kropelki");
-        this.setBounds(200, 200, 400, 400);
+        this.setBounds(300, 100, 500, 550);
         panelGame.setBackground(Color.BLACK);
 
         startButton.setText("Start");
@@ -41,13 +41,24 @@ public class ArkanoidNetBeans extends JFrame {
             public void actionPerformed(ActionEvent e) {
 
                 startGame();
+                startButton.setVisible(false);
+                stopButton.setVisible(true);
+//                try {
+//                    Thread.sleep(2000);
+//                } catch (InterruptedException ex) {
+//                    Logger.getLogger(ArkanoidNetBeans.class.getName()).log(Level.SEVERE, null, ex);
+//                }
 
             }
         });
+        stopButton.setVisible(false);
         stopButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                
                 stopGame();
+                startButton.setVisible(true);
+                stopButton.setVisible(false);
             }
         });
         this.getContentPane().add(panelGame);
@@ -58,6 +69,7 @@ public class ArkanoidNetBeans extends JFrame {
     public void startGame() {
 
         panelGame.startBall();
+        
     }
 
     public void stopGame() {
@@ -75,44 +87,54 @@ public class ArkanoidNetBeans extends JFrame {
 
     class GamePanel extends JPanel {
 
-        Ball[] tabBall = new Ball[1];
-        Thread thread;
+        Ball tabBall = new Ball();
+        Thread threadBall;
+        Thread threadPaddle;
+        Paddle paddle = new Paddle();
 //        Ball newBall = new Ball();
         JPanel thisPanel = this;
 
         public void startBall() {
 //             Ball newBall = new Ball();
-            tabBall[0] = new Ball();
-            thread = new Thread(new BallRunnable(tabBall[0]));
-            thread.start();
+//            tabBall[0] = new Ball();
+            threadBall = new Thread(new BallRunnable(tabBall));
+            threadPaddle = new Thread(new PaddleRunnable(paddle));
+            threadBall.start();
+            threadPaddle.start();
+            int i =1;
+            System.out.println(i++);
         }
 
         public void stopBall() {
-            thread.interrupt();
+            threadBall.interrupt();
+            threadPaddle.interrupt();
         }
 
         @Override
         public void paintComponent(Graphics g) {
             super.paintComponent(g);
-
-            g.drawImage(Ball.getImg(), tabBall[0].x, tabBall[0].y, null);
+            g.drawImage(Paddle.getImg(), paddle.x, paddle.y, null);
+            g.drawImage(Ball.getImg(), tabBall.x, tabBall.y, null);
+            
         }
 
         public class BallRunnable implements Runnable {
 
             Ball ball;
+            Paddle paddle;
 
-            public BallRunnable(Ball ball) {
+            public BallRunnable(Ball ball ) {
                 this.ball = ball;
+                
             }
 
             @Override
             public void run() {
                 try {
-                    while (!Thread.currentThread().isInterrupted()) {
+                    while (!threadBall.isInterrupted()) {
                         this.ball.traficBall(thisPanel);
                         repaint();
-                        Thread.sleep(1);
+                        Thread.sleep(5);
                     }
                 } catch (InterruptedException ex) {
                     System.out.println(ex.getMessage());
@@ -120,11 +142,35 @@ public class ArkanoidNetBeans extends JFrame {
             }
 
         }
+        public class PaddleRunnable implements Runnable {
+
+            
+            Paddle paddle;
+
+            public PaddleRunnable(Paddle paddle ) {
+                this.paddle = paddle;
+                
+            }
+
+            @Override
+            public void run() {
+                try {
+                    while (!threadPaddle.isInterrupted()) {
+                        this.paddle.traficBall(thisPanel);
+                        repaint();
+                        Thread.sleep(1);
+                    }
+                } catch (InterruptedException ex) {
+                    System.out.println(ex.getMessage());
+                }
+            }
+        }
     }
 
 }
 
 class Ball {
+    Paddle padlle;
 
     public static Image getImg() {
         return Ball.ball;
@@ -164,10 +210,66 @@ class Ball {
         return y;
     }
 
-    int x = 0;
-    int y = 0;
+    int x = 200;
+    int y = 395;
     int dx = 1;
     int dy = 1;
     int xBall = ball.getWidth(null);
     int yBall = ball.getHeight(null);
+}
+
+class Paddle{
+    
+    public static Image getImg() {
+        return Paddle.paddle;
+    }
+
+    public void traficBall(JPanel panel) {
+        //bound - granica, obramowanie
+        Rectangle bound = panel.getBounds();
+        x += dx;
+        y += dy;
+
+        if (y + yPaddle >= bound.getMaxY()) {
+            y = (int) (bound.getMaxY() - yPaddle);
+            dy = -dy;
+        }
+        if (x + xPaddle >= bound.getMaxX()) {
+            x = (int) (bound.getMaxX() - xPaddle);
+            dx = -dx;
+        }
+        if (y < bound.getMinY()) {
+            y = (int) (bound.getMinY());
+            dy = -dy;
+        }
+        if (x < bound.getMinX()) {
+            x = (int) (bound.getMinX());
+            dx = -dx;
+        }
+
+    }
+    public static Image paddle = new ImageIcon("paddle.gif").getImage();
+
+    public int getX() {
+        return x;
+    }
+
+    public int getY() {
+        return y;
+    }
+
+    int x = 150;
+    int y = 400;
+
+    public int getxPaddle() {
+        return xPaddle;
+    }
+
+    public int getyPaddle() {
+        return yPaddle;
+    }
+    int dx = 1;
+    int dy = 0;
+    int xPaddle = paddle.getWidth(null);
+    int yPaddle = paddle.getHeight(null);
 }
